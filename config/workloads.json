@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "description": "Canonical static FP32 transformer MLP workloads for TensorForge v0.1",
+  "seed": 2026,
+  "dtype": "float32",
+  "workloads": [
+    {
+      "name": "bert_base",
+      "batch": 1,
+      "sequence": 128,
+      "hidden": 768,
+      "intermediate": 3072
+    },
+    {
+      "name": "bert_large",
+      "batch": 1,
+      "sequence": 128,
+      "hidden": 1024,
+      "intermediate": 4096
+    },
+    {
+      "name": "gpt2_small",
+      "batch": 1,
+      "sequence": 256,
+      "hidden": 768,
+      "intermediate": 3072
+    },
+    {
+      "name": "vit_base",
+      "batch": 1,
+      "sequence": 197,
+      "hidden": 768,
+      "intermediate": 3072
+    }
+  ]
+}
