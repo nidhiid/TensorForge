@@ -46,6 +46,13 @@ static FP32 `Linear -> GELU(tanh) -> Linear` model with `torch.fx`, converts
 PyTorch's weight layout, emits TensorForge MLIR, executes the CPU pipeline, and
 checks the complete output tensor against PyTorch.
 
+Phase 8 adds the first [CUDA runtime and MatMul kernel](docs/cuda-runtime.md).
+The runtime exposes a stable C API for one device and stream, device memory,
+asynchronous copies, synchronization, and row-major FP32 MatMul. The CUDA
+kernel uses bounds-checked 16x16 shared-memory tiles, including dimensions that
+are not tile multiples. Non-CUDA builds provide the same API as an explicit
+"unavailable" stub.
+
 See [Building TensorForge](docs/building.md) for dependency, build, test, and
-execution instructions. The next milestone is the CUDA runtime and initial
-MatMul kernel.
+execution instructions. The next milestone is compiler lowering that dispatches
+`tf.matmul` and `tf.linear` through the CUDA runtime.

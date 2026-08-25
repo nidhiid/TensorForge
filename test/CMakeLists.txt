@@ -108,3 +108,31 @@ add_test(
           -s ${CMAKE_CURRENT_SOURCE_DIR}/Python
           -p test_frontend.py
 )
+
+add_executable(tensorforge-cuda-runtime-api-test
+  Runtime/cuda-runtime-api.cpp
+)
+target_link_libraries(tensorforge-cuda-runtime-api-test
+  PRIVATE TensorForgeCudaRuntime
+)
+add_test(
+  NAME tensorforge-cuda-runtime-api
+  COMMAND $<TARGET_FILE:tensorforge-cuda-runtime-api-test>
+)
+
+if(TENSORFORGE_ENABLE_CUDA)
+  add_executable(tensorforge-cuda-matmul-correctness-test
+    Runtime/cuda-matmul-correctness.cpp
+  )
+  target_link_libraries(tensorforge-cuda-matmul-correctness-test
+    PRIVATE TensorForgeCudaRuntime
+  )
+  add_test(
+    NAME tensorforge-cuda-matmul-correctness
+    COMMAND $<TARGET_FILE:tensorforge-cuda-matmul-correctness-test>
+  )
+  set_tests_properties(
+    tensorforge-cuda-matmul-correctness
+    PROPERTIES SKIP_RETURN_CODE 77
+  )
+endif()

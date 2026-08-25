@@ -2,6 +2,25 @@ cmake_minimum_required(VERSION 3.20)
 
 project(TensorForge VERSION 0.1.0 LANGUAGES C CXX)
 
+option(
+  TENSORFORGE_ENABLE_CUDA
+  "Build the TensorForge CUDA runtime and kernels"
+  OFF
+)
+
+if(TENSORFORGE_ENABLE_CUDA)
+  include(CheckLanguage)
+  check_language(CUDA)
+  if(NOT CMAKE_CUDA_COMPILER)
+    message(FATAL_ERROR
+            "TENSORFORGE_ENABLE_CUDA=ON, but no CUDA compiler was found")
+  endif()
+  enable_language(CUDA)
+  find_package(CUDAToolkit REQUIRED)
+  set(CMAKE_CUDA_STANDARD 17)
+  set(CMAKE_CUDA_STANDARD_REQUIRED ON)
+endif()
+
 # LLVM 22's HandleLLVMOptions module uses CMake's pre-4.4 macro escape
 # behavior. Select it explicitly so CMake 4.4 does not emit a policy warning.
 if(POLICY CMP0219)
@@ -34,6 +53,7 @@ include_directories(${PROJECT_BINARY_DIR}/include)
 add_subdirectory(include/TensorForge/Dialect/TensorForge/IR)
 add_subdirectory(lib/Dialect/TensorForge/IR)
 add_subdirectory(lib/Transforms)
+add_subdirectory(lib/Runtime)
 add_subdirectory(tools/tensorforge-opt)
 
 include(CTest)

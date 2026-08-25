@@ -83,3 +83,27 @@ After building `tensorforge-opt`, run the complete Phase 7 demonstration:
 The command captures a small transformer MLP with `torch.fx`, emits input and
 optimized MLIR, runs the native CPU result, and compares every output value
 against PyTorch. Compiler artifacts are saved under `artifacts/phase7/`.
+
+## Build the CUDA runtime
+
+The default build sets `TENSORFORGE_ENABLE_CUDA=OFF`. It produces a portable
+runtime library whose API reports that CUDA is unavailable, allowing compiler
+and API development on machines such as Apple Silicon Macs.
+
+On a Linux machine with the NVIDIA CUDA Toolkit, enable the real runtime and
+select the compute capability for the target GPU. For example, architecture
+`80` targets NVIDIA Ampere A100 GPUs:
+
+```bash
+cmake -S . -B build-cuda -G Ninja \
+  -DMLIR_DIR=/path/to/llvm/lib/cmake/mlir \
+  -DLLVM_DIR=/path/to/llvm/lib/cmake/llvm \
+  -DTENSORFORGE_ENABLE_CUDA=ON \
+  -DCMAKE_CUDA_ARCHITECTURES=80
+cmake --build build-cuda
+ctest --test-dir build-cuda -R cuda --output-on-failure
+```
+
+Configuration fails immediately if CUDA is requested but `nvcc` or the CUDA
+Toolkit cannot be found. The GPU correctness test returns CTest's skipped
+status when the toolkit is installed but no NVIDIA device is visible.
