@@ -3,6 +3,13 @@
 /cmake-build-*/
 /compile_commands.json
 
+# Python frontend output
+/.venv/
+/artifacts/
+__pycache__/
+*.py[cod]
+*.egg-info/
+
 # Editor and operating-system files
 .DS_Store
 *.swp

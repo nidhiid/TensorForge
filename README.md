@@ -41,6 +41,11 @@ operations. MLIR's existing passes then lower those operations to LLVM IR, and
 an end-to-end test JIT-executes fused Linear+GELU and checks its numerical
 result.
 
+Phase 7 adds the [PyTorch frontend](docs/pytorch-frontend.md). It captures a
+static FP32 `Linear -> GELU(tanh) -> Linear` model with `torch.fx`, converts
+PyTorch's weight layout, emits TensorForge MLIR, executes the CPU pipeline, and
+checks the complete output tensor against PyTorch.
+
 See [Building TensorForge](docs/building.md) for dependency, build, test, and
-execution instructions. The next milestone is a small Python/PyTorch frontend
-and CPU correctness comparison.
+execution instructions. The next milestone is the CUDA runtime and initial
+MatMul kernel.

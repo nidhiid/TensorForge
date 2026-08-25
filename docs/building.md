@@ -12,6 +12,14 @@ Install the dependencies:
 brew install cmake ninja llvm
 ```
 
+Create the Python 3.11 environment and install the PyTorch frontend:
+
+```bash
+python3.11 -m venv .venv
+.venv/bin/python -m pip install --upgrade pip
+.venv/bin/python -m pip install -e .
+```
+
 Configure, build, and test:
 
 ```bash
@@ -63,3 +71,15 @@ LLVM dialect IR and executes it with MLIR's CPU JIT runner:
 ```bash
 ctest --test-dir build -R cpu --output-on-failure
 ```
+
+## Run the PyTorch frontend
+
+After building `tensorforge-opt`, run the complete Phase 7 demonstration:
+
+```bash
+.venv/bin/python examples/run_mlp.py
+```
+
+The command captures a small transformer MLP with `torch.fx`, emits input and
+optimized MLIR, runs the native CPU result, and compares every output value
+against PyTorch. Compiler artifacts are saved under `artifacts/phase7/`.

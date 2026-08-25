@@ -82,3 +82,29 @@ add_test(
           -DLOWERED_FILE=${CMAKE_CURRENT_BINARY_DIR}/tensorforge-cpu-llvm.mlir
           -P ${CMAKE_CURRENT_SOURCE_DIR}/Execution/check-cpu-execution.cmake
 )
+
+if(EXISTS "${PROJECT_SOURCE_DIR}/.venv/bin/python")
+  set(TENSORFORGE_PYTHON "${PROJECT_SOURCE_DIR}/.venv/bin/python")
+else()
+  find_package(Python3 3.11 COMPONENTS Interpreter REQUIRED)
+  set(TENSORFORGE_PYTHON "${Python3_EXECUTABLE}")
+endif()
+
+find_library(
+  TENSORFORGE_MLIR_RUNNER_UTILS
+  NAMES mlir_runner_utils
+  HINTS ${LLVM_LIBRARY_DIRS}
+  REQUIRED
+)
+
+add_test(
+  NAME tensorforge-pytorch-frontend-and-cpu-correctness
+  COMMAND ${CMAKE_COMMAND} -E env
+          PYTHONPATH=${PROJECT_SOURCE_DIR}/python
+          TENSORFORGE_OPT=$<TARGET_FILE:tensorforge-opt>
+          MLIR_RUNNER=${TENSORFORGE_MLIR_RUNNER}
+          MLIR_RUNNER_UTILS=${TENSORFORGE_MLIR_RUNNER_UTILS}
+          ${TENSORFORGE_PYTHON} -m unittest discover
+          -s ${CMAKE_CURRENT_SOURCE_DIR}/Python
+          -p test_frontend.py
+)
