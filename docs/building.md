@@ -107,3 +107,57 @@ ctest --test-dir build-cuda -R cuda --output-on-failure
 Configuration fails immediately if CUDA is requested but `nvcc` or the CUDA
 Toolkit cannot be found. The GPU correctness test returns CTest's skipped
 status when the toolkit is installed but no NVIDIA device is visible.
+
+The CUDA test selection includes the Phase 8 MatMul test and the Phase 10
+fused/unfused Linear+GELU test. Run the complete compiler-generated CUDA path
+and benchmark after the tests pass:
+
+```bash
+.venv/bin/python examples/run_mlp_cuda.py \
+  --cuda-runtime build-cuda/lib/libTensorForgeCudaRuntime.so
+.venv/bin/python examples/benchmark_cuda.py \
+  --runtime build-cuda/lib/libTensorForgeCudaRuntime.so \
+  --warmup 10 --samples 20 --iterations 100 \
+  --json-output artifacts/phase10/benchmark.json
+```
+
+The benchmark's fused/unfused timing excludes allocation and transfers. The
+current compiler-generated host wrappers do include those costs because they
+create device storage for each operation; this distinction should be stated
+when presenting results.
+
+## Google Colab kernel-only check
+
+Colab normally supplies CUDA and PyTorch, but not an LLVM/MLIR development
+build. You can still compile and verify the runtime kernels. First make sure the
+notebook is inside the cloned repository—the paths below are relative to its
+root:
+
+```bash
+cd /content/TensorForge
+pwd
+test -f lib/Runtime/CudaRuntime.cpp
+```
+
+Then build the shared library and the fused correctness test:
+
+```bash
+nvcc -std=c++17 -shared -Xcompiler=-fPIC \
+  -Wno-deprecated-gpu-targets \
+  -Iinclude \
+  lib/Runtime/CudaRuntime.cpp \
+  lib/Runtime/MatMul.cu \
+  -o libTensorForgeCudaRuntime.so
+
+g++ -std=c++17 -Iinclude \
+  test/Runtime/cuda-linear-gelu-correctness.cpp \
+  -L. -lTensorForgeCudaRuntime -Wl,-rpath,. \
+  -o cuda-linear-gelu-test
+
+./cuda-linear-gelu-test
+```
+
+A successful run prints a `PASS` line with fused and unfused milliseconds. The
+deprecated-GPU-target message is only an `nvcc` warning; a missing source file
+means the notebook is in the wrong directory or has not pulled the latest
+changes.

@@ -11,6 +11,7 @@ namespace tensorforge {
 
 std::unique_ptr<mlir::Pass> createFuseLinearGeluPass();
 std::unique_ptr<mlir::Pass> createLowerToLinalgPass();
+std::unique_ptr<mlir::Pass> createLowerToCudaRuntimePass();
 void registerTensorForgePasses();
 
 } // namespace tensorforge

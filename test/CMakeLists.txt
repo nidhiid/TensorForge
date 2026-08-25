@@ -66,6 +66,15 @@ add_test(
           -P ${CMAKE_CURRENT_SOURCE_DIR}/Lowering/check-cpu-lowering.cmake
 )
 
+add_test(
+  NAME tensorforge-lowers-supported-operations-to-cuda-runtime
+  COMMAND ${CMAKE_COMMAND}
+          -DTENSORFORGE_OPT=$<TARGET_FILE:tensorforge-opt>
+          -DLOWERING_INPUT=${CMAKE_CURRENT_SOURCE_DIR}/Lowering/to-cuda-runtime.mlir
+          -DSTANDALONE_GELU_INPUT=${CMAKE_CURRENT_SOURCE_DIR}/Lowering/standalone-gelu-cuda.mlir
+          -P ${CMAKE_CURRENT_SOURCE_DIR}/Lowering/check-cuda-runtime-lowering.cmake
+)
+
 find_program(
   TENSORFORGE_MLIR_RUNNER
   NAMES mlir-runner
@@ -133,6 +142,21 @@ if(TENSORFORGE_ENABLE_CUDA)
   )
   set_tests_properties(
     tensorforge-cuda-matmul-correctness
+    PROPERTIES SKIP_RETURN_CODE 77
+  )
+
+  add_executable(tensorforge-cuda-linear-gelu-correctness-test
+    Runtime/cuda-linear-gelu-correctness.cpp
+  )
+  target_link_libraries(tensorforge-cuda-linear-gelu-correctness-test
+    PRIVATE TensorForgeCudaRuntime
+  )
+  add_test(
+    NAME tensorforge-cuda-linear-gelu-correctness
+    COMMAND $<TARGET_FILE:tensorforge-cuda-linear-gelu-correctness-test>
+  )
+  set_tests_properties(
+    tensorforge-cuda-linear-gelu-correctness
     PROPERTIES SKIP_RETURN_CODE 77
   )
 endif()

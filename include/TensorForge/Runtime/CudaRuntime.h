@@ -60,6 +60,47 @@ TF_CUDA_API TfCudaStatus tfCudaMatmulF32(TfCudaContext *context,
                                          float *outputDevice, int64_t m,
                                          int64_t k, int64_t n);
 
+/// Queue MatMul+bias and MatMul+bias+GELU CUDA kernels.
+TF_CUDA_API TfCudaStatus tfCudaLinearF32(TfCudaContext *context,
+                                         const float *inputDevice,
+                                         const float *weightDevice,
+                                         const float *biasDevice,
+                                         float *outputDevice, int64_t m,
+                                         int64_t k, int64_t n);
+TF_CUDA_API TfCudaStatus
+tfCudaFusedLinearGeluF32(TfCudaContext *context, const float *inputDevice,
+                         const float *weightDevice, const float *biasDevice,
+                         float *outputDevice, int64_t m, int64_t k, int64_t n);
+TF_CUDA_API TfCudaStatus tfCudaGeluF32(TfCudaContext *context,
+                                       const float *inputDevice,
+                                       float *outputDevice, int64_t elements);
+
+/// Time fused or unfused Linear+GELU with CUDA events. `fused=0` launches
+/// Linear then GELU through `scratchDevice`; nonzero launches the fused kernel.
+TF_CUDA_API TfCudaStatus tfCudaTimeLinearGeluF32(
+    TfCudaContext *context, const float *inputDevice, const float *weightDevice,
+    const float *biasDevice, float *scratchDevice, float *outputDevice,
+    int64_t m, int64_t k, int64_t n, int32_t fused, int32_t iterations,
+    float *millisecondsPerIteration);
+
+/// Synchronous host-pointer entry points used by compiler-generated LLVM IR.
+/// Values are uintptr_t because MLIR obtains host addresses as index integers.
+TF_CUDA_API TfCudaStatus tfCudaRunMatmulHostF32(uintptr_t lhsHost,
+                                                uintptr_t rhsHost,
+                                                uintptr_t outputHost, int64_t m,
+                                                int64_t k, int64_t n);
+TF_CUDA_API TfCudaStatus tfCudaRunLinearHostF32(uintptr_t inputHost,
+                                                uintptr_t weightHost,
+                                                uintptr_t biasHost,
+                                                uintptr_t outputHost, int64_t m,
+                                                int64_t k, int64_t n);
+TF_CUDA_API TfCudaStatus tfCudaRunFusedLinearGeluHostF32(
+    uintptr_t inputHost, uintptr_t weightHost, uintptr_t biasHost,
+    uintptr_t outputHost, int64_t m, int64_t k, int64_t n);
+
+/// Abort with a diagnostic when compiler-generated code receives an error.
+TF_CUDA_API void tfCudaCheckStatus(int32_t status);
+
 /// Wait for every copy and kernel queued on the context's stream.
 TF_CUDA_API TfCudaStatus tfCudaSynchronize(TfCudaContext *context);
 

@@ -66,6 +66,7 @@ std::unique_ptr<mlir::Pass> createFuseLinearGeluPass() {
 void registerTensorForgePasses() {
   mlir::registerPass([] { return createFuseLinearGeluPass(); });
   mlir::registerPass([] { return createLowerToLinalgPass(); });
+  mlir::registerPass([] { return createLowerToCudaRuntimePass(); });
 }
 
 } // namespace tensorforge

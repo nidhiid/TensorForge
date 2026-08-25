@@ -39,6 +39,19 @@ int main() {
     std::cerr << "non-CUDA build did not provide a useful diagnostic\n";
     return 1;
   }
+
+  float input = 1.0f;
+  float weight = 1.0f;
+  float bias = 0.0f;
+  float output = 0.0f;
+  if (tfCudaRunFusedLinearGeluHostF32(reinterpret_cast<uintptr_t>(&input),
+                                      reinterpret_cast<uintptr_t>(&weight),
+                                      reinterpret_cast<uintptr_t>(&bias),
+                                      reinterpret_cast<uintptr_t>(&output), 1,
+                                      1, 1) != TF_CUDA_ERROR_UNAVAILABLE) {
+    std::cerr << "non-CUDA fused host wrapper did not report unavailable\n";
+    return 1;
+  }
 #endif
 
   std::cout << "TensorForge CUDA runtime API is available; devices="

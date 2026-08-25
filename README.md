@@ -53,6 +53,17 @@ kernel uses bounds-checked 16x16 shared-memory tiles, including dimensions that
 are not tile multiples. Non-CUDA builds provide the same API as an explicit
 "unavailable" stub.
 
+Phase 9 adds [CUDA runtime lowering](docs/cuda-lowering.md). The compiler turns
+`tf.matmul`, `tf.linear`, and `tf.fused_linear_gelu` into calls to the runtime,
+then MLIR lowers the surrounding host program to LLVM IR. Reshape and transpose
+continue through standard MLIR dialects.
+
+Phase 10 adds the [fused CUDA Linear+GELU kernel and evaluation
+harness](docs/cuda-linear-gelu.md). The fused kernel performs MatMul, bias, and
+the tanh GELU approximation before its single output write. GPU-only tests
+compare fused and unfused results, while the Python benchmark uses CUDA events
+over all four configured transformer workloads and can save a JSON report.
+
 See [Building TensorForge](docs/building.md) for dependency, build, test, and
-execution instructions. The next milestone is compiler lowering that dispatches
-`tf.matmul` and `tf.linear` through the CUDA runtime.
+execution instructions. CUDA results must be measured on the target NVIDIA GPU;
+the repository does not contain invented speedup or hardware-counter numbers.

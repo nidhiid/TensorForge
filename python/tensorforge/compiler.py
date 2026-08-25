@@ -44,6 +44,21 @@ _CPU_LOWERING_PASSES = (
     "--reconcile-unrealized-casts",
 )
 
+_CUDA_LOWERING_PASSES = (
+    "--tf-lower-to-cuda-runtime",
+    "--one-shot-bufferize=bufferize-function-boundaries",
+    "--convert-bufferization-to-memref",
+    "--convert-linalg-to-loops",
+    "--convert-scf-to-cf",
+    "--expand-strided-metadata",
+    "--convert-arith-to-llvm",
+    "--convert-cf-to-llvm",
+    "--convert-index-to-llvm",
+    "--finalize-memref-to-llvm",
+    "--convert-func-to-llvm",
+    "--reconcile-unrealized-casts",
+)
+
 
 def _repo_root() -> Path:
     return Path(__file__).resolve().parents[2]
@@ -80,6 +95,27 @@ def _runner_utils(mlir_runner: Path, explicit: str | os.PathLike[str] | None) ->
             if library.is_file():
                 return library.resolve()
     raise FileNotFoundError("could not locate libmlir_runner_utils")
+
+
+def _cuda_runtime(explicit: str | os.PathLike[str] | None) -> Path:
+    if explicit is not None:
+        library = Path(explicit).expanduser().resolve()
+        if library.is_file():
+            return library
+        raise FileNotFoundError(f"TensorForge CUDA runtime not found: {library}")
+
+    root = _repo_root()
+    candidates = (
+        root / "build-cuda/lib/libTensorForgeCudaRuntime.so",
+        root / "build/lib/libTensorForgeCudaRuntime.so",
+    )
+    for library in candidates:
+        if library.is_file():
+            return library.resolve()
+    raise FileNotFoundError(
+        "could not locate the CUDA-enabled libTensorForgeCudaRuntime.so; "
+        "build with -DTENSORFORGE_ENABLE_CUDA=ON or pass cuda_runtime="
+    )
 
 
 def _run(command: Sequence[str]) -> subprocess.CompletedProcess[str]:
@@ -186,6 +222,89 @@ def compile_and_run(
     )
 
     # Paths are useful only when the caller requested persistent artifacts.
+    if temporary_directory is not None:
+        temporary_directory.cleanup()
+    return result
+
+
+def compile_and_run_cuda(
+    input_mlir: str,
+    output_shape: Sequence[int],
+    *,
+    artifacts_dir: str | os.PathLike[str] | None = None,
+    tensorforge_opt: str | os.PathLike[str] | None = None,
+    mlir_runner: str | os.PathLike[str] | None = None,
+    runner_utils: str | os.PathLike[str] | None = None,
+    cuda_runtime: str | os.PathLike[str] | None = None,
+) -> CompilationResult:
+    """Optimize, lower to CUDA runtime calls, JIT-execute, and return FP32 output."""
+
+    compiler = _find_executable(
+        tensorforge_opt,
+        str(_repo_root() / "build-cuda/bin/tensorforge-opt"),
+        str(_repo_root() / "build/bin/tensorforge-opt"),
+    )
+    runner = _find_executable(
+        mlir_runner, "mlir-runner", "/opt/homebrew/opt/llvm/bin/mlir-runner"
+    )
+    runner_library = _runner_utils(runner, runner_utils)
+    cuda_library = _cuda_runtime(cuda_runtime)
+
+    temporary_directory: tempfile.TemporaryDirectory[str] | None = None
+    if artifacts_dir is None:
+        temporary_directory = tempfile.TemporaryDirectory(prefix="tensorforge-cuda-")
+        output_directory = Path(temporary_directory.name)
+    else:
+        output_directory = Path(artifacts_dir).expanduser().resolve()
+        output_directory.mkdir(parents=True, exist_ok=True)
+
+    source_path = output_directory / "input.mlir"
+    optimized_path = output_directory / "optimized.mlir"
+    llvm_path = output_directory / "lowered-cuda-llvm.mlir"
+    source_path.write_text(input_mlir, encoding="utf-8")
+
+    _run(
+        [
+            str(compiler),
+            str(source_path),
+            "--tf-fuse-linear-gelu",
+            "--canonicalize",
+            "-o",
+            str(optimized_path),
+        ]
+    )
+    optimized = optimized_path.read_text(encoding="utf-8")
+    fusion_occurred = "tf.fused_linear_gelu" in optimized
+
+    _run(
+        [
+            str(compiler),
+            str(optimized_path),
+            *_CUDA_LOWERING_PASSES,
+            "-o",
+            str(llvm_path),
+        ]
+    )
+    execution = _run(
+        [
+            str(runner),
+            str(llvm_path),
+            "-e",
+            "main",
+            "--entry-point-result=void",
+            f"--shared-libs={runner_library}",
+            f"--shared-libs={cuda_library}",
+        ]
+    )
+    values = _parse_memref_output(execution.stdout, math.prod(output_shape))
+
+    result = CompilationResult(
+        output_values=values,
+        fusion_occurred=fusion_occurred,
+        input_mlir=source_path if artifacts_dir is not None else None,
+        optimized_mlir=optimized_path if artifacts_dir is not None else None,
+        llvm_mlir=llvm_path if artifacts_dir is not None else None,
+    )
     if temporary_directory is not None:
         temporary_directory.cleanup()
     return result

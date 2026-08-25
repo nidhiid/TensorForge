@@ -56,12 +56,13 @@ CUDA Toolkit, builds `MatMul.cu`, and links the CUDA Runtime library. See the
 [official CUDA Runtime API](https://docs.nvidia.com/cuda/cuda-runtime-api/) and
 [CMake CUDA architectures documentation](https://cmake.org/cmake/help/latest/variable/CMAKE_CUDA_ARCHITECTURES.html).
 
-## Current boundary
+## Later phases
 
-This phase implements the runtime and kernel but does not yet rewrite MLIR into
-calls to that runtime. It also does not implement bias addition, GELU, the fused
-Linear+GELU CUDA kernel, benchmarking, or tiling selection. Those are later
-phases.
+Phase 9 now rewrites MLIR into calls to this runtime, and Phase 10 adds Linear,
+GELU, fused Linear+GELU, CUDA-event timing, and Python evaluation. See
+[CUDA lowering](cuda-lowering.md) and [fused Linear+GELU](cuda-linear-gelu.md).
+The original MatMul API and test remain the small, independently testable base
+of that work.
 
 The real CUDA sources cannot be compiled or executed on Apple Silicon. The
 portable stub is compiled and tested locally; the GPU correctness test must be
