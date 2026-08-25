@@ -2,6 +2,7 @@
 #define TENSORFORGE_DIALECT_TENSORFORGE_IR_TENSORFORGEOPS_H
 
 #include "TensorForge/Dialect/TensorForge/IR/TensorForgeDialect.h"
+#include "mlir/Bytecode/BytecodeOpInterface.h"
 #include "mlir/IR/BuiltinTypes.h"
 #include "mlir/IR/OpDefinition.h"
 #include "mlir/Interfaces/InferTypeOpInterface.h"

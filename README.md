@@ -30,6 +30,11 @@ Phase 4 implements automatic [shape inference](docs/shape-inference.md) using
 MLIR's standard type-inference interface. TensorForge operations now derive
 their result tensor types directly from their operand shapes.
 
+Phase 5 adds [compiler optimizations](docs/optimizations.md): redundant reshape
+and double-transpose canonicalization, constant-reshape folding, and a safe
+pass that rewrites a single-use `tf.linear -> tf.gelu` pair to
+`tf.fused_linear_gelu`.
+
 See [Building TensorForge](docs/building.md) for dependency, build, test, and
-execution instructions. The next milestone is canonicalization and operation
-fusion.
+execution instructions. The next milestone is lowering TensorForge operations
+to executable CPU code.

@@ -47,3 +47,13 @@ set_tests_properties(
   tensorforge-infers-transformer-mlp-shapes
   PROPERTIES PASS_REGULAR_EXPRESSION "func\\.func @bert_mlp"
 )
+
+add_test(
+  NAME tensorforge-canonicalizes-and-fuses-operations
+  COMMAND ${CMAKE_COMMAND}
+          -DTENSORFORGE_OPT=$<TARGET_FILE:tensorforge-opt>
+          -DFUSION_INPUT=${CMAKE_CURRENT_SOURCE_DIR}/Transforms/fuse-linear-gelu.mlir
+          -DNO_FUSION_INPUT=${CMAKE_CURRENT_SOURCE_DIR}/Transforms/no-fuse-multiple-users.mlir
+          -DCANONICALIZE_INPUT=${CMAKE_CURRENT_SOURCE_DIR}/Transforms/canonicalize.mlir
+          -P ${CMAKE_CURRENT_SOURCE_DIR}/Transforms/check-optimizations.cmake
+)

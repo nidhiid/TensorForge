@@ -10,4 +10,5 @@ def TensorForge_Dialect : Dialect {
     multiplication, linear layers, and GELU activation for static FP32
     transformer MLP workloads.
   }];
+  let hasConstantMaterializer = 1;
 }

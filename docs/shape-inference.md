@@ -9,6 +9,9 @@ result type does not need to be repeated in the custom operation syntax.
 - `tf.matmul`: `[M, K] x [K, N]` produces `[M, N]`.
 - `tf.linear`: input `[M, K]`, weight `[K, N]`, and bias `[N]` produce `[M, N]`.
 - `tf.gelu`: the result has exactly the input type.
+- `tf.fused_linear_gelu`: uses the same result shape as `tf.linear`.
+- `tf.reshape`: uses its static target-shape attribute.
+- `tf.transpose`: `[M, N]` produces `[N, M]`.
 
 For example:
 

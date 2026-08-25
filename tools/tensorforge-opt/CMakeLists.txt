@@ -9,7 +9,10 @@ set_target_properties(tensorforge-opt PROPERTIES
 )
 
 target_link_libraries(tensorforge-opt PRIVATE
+  MLIRArithDialect
   MLIRFuncDialect
   MLIROptLib
+  MLIRTransforms
   TensorForgeDialect
+  TensorForgeTransforms
 )

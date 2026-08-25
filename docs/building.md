@@ -46,6 +46,9 @@ TensorForge's `tf` dialect:
 ```bash
 ./build/bin/tensorforge-opt test/smoke.mlir
 ./build/bin/tensorforge-opt test/Dialect/valid.mlir
+./build/bin/tensorforge-opt --canonicalize test/Transforms/canonicalize.mlir
+./build/bin/tensorforge-opt --tf-fuse-linear-gelu \
+  test/Transforms/fuse-linear-gelu.mlir
 ```
 
 It should parse the file and print the same MLIR module. Use `-o output.mlir`

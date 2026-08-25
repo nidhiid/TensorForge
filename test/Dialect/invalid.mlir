@@ -87,3 +87,25 @@ module {
     return %result : tensor<?x4xf32>
   }
 }
+
+// -----
+
+module {
+  func.func @reshape_changes_element_count(
+      %input: tensor<2x3xf32>) -> tensor<4xf32> {
+    // expected-error @+1 {{'tf.reshape' op input and output must contain the same number of elements, but got 6 and 4}}
+    %result = tf.reshape %input to [4] : tensor<2x3xf32>
+    return %result : tensor<4xf32>
+  }
+}
+
+// -----
+
+module {
+  func.func @cannot_infer_rank_three_transpose(
+      %input: tensor<1x2x3xf32>) -> tensor<3x2x1xf32> {
+    // expected-error @+1 {{tf.transpose requires a rank-2 tensor to infer its result}}
+    %result = tf.transpose %input : tensor<1x2x3xf32>
+    return %result : tensor<3x2x1xf32>
+  }
+}
