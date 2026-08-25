@@ -12,6 +12,21 @@ module {
 // -----
 
 module {
+  func.func @incompatible_linear_matmul(
+      %input: tensor<2x3xf32>,
+      %weight: tensor<5x4xf32>,
+      %bias: tensor<4xf32>) -> tensor<2x4xf32> {
+    // expected-error @+1 {{'tf.linear' op has incompatible contracting dimensions: 3 and 5}}
+    %result = tf.linear %input, %weight, %bias
+        : tensor<2x3xf32>, tensor<5x4xf32>, tensor<4xf32>
+          -> tensor<2x4xf32>
+    return %result : tensor<2x4xf32>
+  }
+}
+
+// -----
+
+module {
   func.func @wrong_linear_bias(
       %input: tensor<2x3xf32>,
       %weight: tensor<3x4xf32>,
