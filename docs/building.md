@@ -40,11 +40,12 @@ ctest --test-dir build --output-on-failure
 
 ## Run the tool
 
-The Phase 2 tool accepts ordinary MLIR containing the registered `func`
-dialect:
+The tool accepts ordinary MLIR containing the registered `func` dialect and
+TensorForge's `tf` dialect:
 
 ```bash
 ./build/bin/tensorforge-opt test/smoke.mlir
+./build/bin/tensorforge-opt test/Dialect/valid.mlir
 ```
 
 It should parse the file and print the same MLIR module. Use `-o output.mlir`

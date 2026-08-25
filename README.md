@@ -17,11 +17,14 @@ Phase 1 froze the initial scope:
 - [Acceptance criteria](docs/acceptance-criteria.md)
 - [Canonical benchmark workloads](config/workloads.json)
 
-Phase 2 adds the first buildable compiler component: a C++17/CMake project and
+Phase 2 added the first buildable compiler component: a C++17/CMake project and
 `tensorforge-opt`, a minimal MLIR command-line tool that parses and prints the
-standard `func` dialect. It does not contain TensorForge operations or
-optimization passes yet.
+standard `func` dialect.
+
+Phase 3 adds a TableGen-defined TensorForge dialect with verified `tf.matmul`,
+`tf.linear`, and `tf.gelu` operations for static FP32 tensors. See the
+[dialect reference](docs/dialect.md) for syntax and constraints. Optimization
+passes and lowering are not implemented yet.
 
 See [Building TensorForge](docs/building.md) for dependency, build, test, and
-execution instructions. The next milestone is the custom TensorForge MLIR
-dialect.
+execution instructions. The next milestone is automatic shape inference.

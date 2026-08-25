@@ -28,7 +28,11 @@ include(HandleLLVMOptions)
 add_definitions(${LLVM_DEFINITIONS})
 include_directories(SYSTEM ${LLVM_INCLUDE_DIRS})
 include_directories(SYSTEM ${MLIR_INCLUDE_DIRS})
+include_directories(${PROJECT_SOURCE_DIR}/include)
+include_directories(${PROJECT_BINARY_DIR}/include)
 
+add_subdirectory(include/TensorForge/Dialect/TensorForge/IR)
+add_subdirectory(lib/Dialect/TensorForge/IR)
 add_subdirectory(tools/tensorforge-opt)
 
 include(CTest)
