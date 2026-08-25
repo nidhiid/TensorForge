@@ -1,10 +1,14 @@
 include "TensorForge/Dialect/TensorForge/IR/TensorForgeDialect.td"
+include "mlir/Interfaces/InferTypeOpInterface.td"
 include "mlir/Interfaces/SideEffectInterfaces.td"
 
 class TensorForge_Op<string mnemonic, list<Trait> traits = []>
     : Op<TensorForge_Dialect, mnemonic, traits>;
 
-def TensorForge_MatMulOp : TensorForge_Op<"matmul", [Pure]> {
+def TensorForge_MatMulOp : TensorForge_Op<"matmul", [
+    Pure,
+    DeclareOpInterfaceMethods<InferTypeOpInterface>
+  ]> {
   let summary = "Multiply two rank-2 tensors";
   let description = [{
     Multiplies a static FP32 tensor of shape `[M, K]` by one of shape `[K, N]`
@@ -16,11 +20,14 @@ def TensorForge_MatMulOp : TensorForge_Op<"matmul", [Pure]> {
   let hasVerifier = 1;
 
   let assemblyFormat = [{
-    $lhs `,` $rhs attr-dict `:` type($lhs) `,` type($rhs) `->` type($output)
+    $lhs `,` $rhs attr-dict `:` type($lhs) `,` type($rhs)
   }];
 }
 
-def TensorForge_LinearOp : TensorForge_Op<"linear", [Pure]> {
+def TensorForge_LinearOp : TensorForge_Op<"linear", [
+    Pure,
+    DeclareOpInterfaceMethods<InferTypeOpInterface>
+  ]> {
   let summary = "Apply a rank-2 linear layer with a rank-1 bias";
   let description = [{
     Multiplies an input of shape `[M, K]` by a weight of shape `[K, N]`, then
@@ -35,11 +42,14 @@ def TensorForge_LinearOp : TensorForge_Op<"linear", [Pure]> {
 
   let assemblyFormat = [{
     $input `,` $weight `,` $bias attr-dict `:` type($input) `,`
-    type($weight) `,` type($bias) `->` type($output)
+    type($weight) `,` type($bias)
   }];
 }
 
-def TensorForge_GeluOp : TensorForge_Op<"gelu", [Pure]> {
+def TensorForge_GeluOp : TensorForge_Op<"gelu", [
+    Pure,
+    DeclareOpInterfaceMethods<InferTypeOpInterface>
+  ]> {
   let summary = "Apply GELU elementwise";
   let description = [{
     Applies the GELU activation to every element of a static FP32 tensor. The
@@ -51,6 +61,6 @@ def TensorForge_GeluOp : TensorForge_Op<"gelu", [Pure]> {
   let hasVerifier = 1;
 
   let assemblyFormat = [{
-    $input attr-dict `:` type($input) `->` type($output)
+    $input attr-dict `:` type($input)
   }];
 }

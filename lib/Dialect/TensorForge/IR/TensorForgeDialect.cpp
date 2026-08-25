@@ -2,6 +2,7 @@
 #include "TensorForge/Dialect/TensorForge/IR/TensorForgeOps.h"
 
 #include "mlir/IR/Builders.h"
+#include "mlir/IR/Diagnostics.h"
 #include "mlir/IR/DialectImplementation.h"
 #include "llvm/ADT/StringRef.h"
 
@@ -61,7 +62,68 @@ mlir::LogicalResult verifyMatmulLike(mlir::Operation *operation,
   return mlir::success();
 }
 
+mlir::LogicalResult
+inferMatmulReturnType(std::optional<mlir::Location> location,
+                      mlir::ValueRange operands, llvm::StringRef operationName,
+                      llvm::SmallVectorImpl<mlir::Type> &inferredReturnTypes) {
+  if (operands.size() < 2)
+    return mlir::emitOptionalError(location, operationName,
+                                   " expects two matrix operands");
+
+  auto lhsType = mlir::dyn_cast<mlir::RankedTensorType>(operands[0].getType());
+  auto rhsType = mlir::dyn_cast<mlir::RankedTensorType>(operands[1].getType());
+  if (!lhsType || !rhsType || lhsType.getRank() != 2 || rhsType.getRank() != 2)
+    return mlir::emitOptionalError(
+        location, operationName,
+        " requires rank-2 tensors to infer its result type");
+
+  inferredReturnTypes.push_back(mlir::RankedTensorType::get(
+      {lhsType.getDimSize(0), rhsType.getDimSize(1)},
+      lhsType.getElementType()));
+  return mlir::success();
+}
+
 } // namespace
+
+mlir::LogicalResult MatMulOp::inferReturnTypes(
+    mlir::MLIRContext *, std::optional<mlir::Location> location,
+    mlir::ValueRange operands, mlir::DictionaryAttr, mlir::OpaqueProperties,
+    mlir::RegionRange, llvm::SmallVectorImpl<mlir::Type> &inferredReturnTypes) {
+  if (operands.size() != 2)
+    return mlir::emitOptionalError(location,
+                                   "tf.matmul expects exactly two operands");
+  return inferMatmulReturnType(location, operands, "tf.matmul",
+                               inferredReturnTypes);
+}
+
+mlir::LogicalResult LinearOp::inferReturnTypes(
+    mlir::MLIRContext *, std::optional<mlir::Location> location,
+    mlir::ValueRange operands, mlir::DictionaryAttr, mlir::OpaqueProperties,
+    mlir::RegionRange, llvm::SmallVectorImpl<mlir::Type> &inferredReturnTypes) {
+  if (operands.size() != 3)
+    return mlir::emitOptionalError(location,
+                                   "tf.linear expects exactly three operands");
+  return inferMatmulReturnType(location, operands, "tf.linear",
+                               inferredReturnTypes);
+}
+
+mlir::LogicalResult GeluOp::inferReturnTypes(
+    mlir::MLIRContext *, std::optional<mlir::Location> location,
+    mlir::ValueRange operands, mlir::DictionaryAttr, mlir::OpaqueProperties,
+    mlir::RegionRange, llvm::SmallVectorImpl<mlir::Type> &inferredReturnTypes) {
+  if (operands.size() != 1)
+    return mlir::emitOptionalError(location,
+                                   "tf.gelu expects exactly one operand");
+
+  auto inputType =
+      mlir::dyn_cast<mlir::RankedTensorType>(operands[0].getType());
+  if (!inputType)
+    return mlir::emitOptionalError(
+        location, "tf.gelu requires a ranked tensor to infer its result type");
+
+  inferredReturnTypes.push_back(inputType);
+  return mlir::success();
+}
 
 mlir::LogicalResult MatMulOp::verify() {
   auto lhsType = mlir::cast<mlir::RankedTensorType>(getLhs().getType());

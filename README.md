@@ -26,5 +26,10 @@ Phase 3 adds a TableGen-defined TensorForge dialect with verified `tf.matmul`,
 [dialect reference](docs/dialect.md) for syntax and constraints. Optimization
 passes and lowering are not implemented yet.
 
+Phase 4 implements automatic [shape inference](docs/shape-inference.md) using
+MLIR's standard type-inference interface. TensorForge operations now derive
+their result tensor types directly from their operand shapes.
+
 See [Building TensorForge](docs/building.md) for dependency, build, test, and
-execution instructions. The next milestone is automatic shape inference.
+execution instructions. The next milestone is canonicalization and operation
+fusion.

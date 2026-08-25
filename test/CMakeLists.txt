@@ -36,3 +36,14 @@ add_test(
           --verify-diagnostics
           ${CMAKE_CURRENT_SOURCE_DIR}/Dialect/invalid.mlir
 )
+
+add_test(
+  NAME tensorforge-infers-transformer-mlp-shapes
+  COMMAND $<TARGET_FILE:tensorforge-opt>
+          ${CMAKE_CURRENT_SOURCE_DIR}/ShapeInference/transformer-mlp.mlir
+)
+
+set_tests_properties(
+  tensorforge-infers-transformer-mlp-shapes
+  PROPERTIES PASS_REGULAR_EXPRESSION "func\\.func @bert_mlp"
+)

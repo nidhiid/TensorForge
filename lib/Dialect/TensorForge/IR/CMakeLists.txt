@@ -6,6 +6,7 @@ add_mlir_dialect_library(TensorForgeDialect
   TensorForgeOpsIncGen
 
   LINK_LIBS PUBLIC
+  MLIRInferTypeOpInterface
   MLIRIR
   MLIRSideEffectInterfaces
   MLIRSupport
