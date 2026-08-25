@@ -49,8 +49,17 @@ TensorForge's `tf` dialect:
 ./build/bin/tensorforge-opt --canonicalize test/Transforms/canonicalize.mlir
 ./build/bin/tensorforge-opt --tf-fuse-linear-gelu \
   test/Transforms/fuse-linear-gelu.mlir
+./build/bin/tensorforge-opt --tf-fuse-linear-gelu --tf-lower-to-linalg \
+  test/Transforms/fuse-linear-gelu.mlir
 ```
 
 It should parse the file and print the same MLIR module. Use `-o output.mlir`
 to write the result to another file and `--help` to see MLIR's standard driver
 options.
+
+The test suite also compiles a small fused Linear+GELU graph all the way to
+LLVM dialect IR and executes it with MLIR's CPU JIT runner:
+
+```bash
+ctest --test-dir build -R cpu --output-on-failure
+```

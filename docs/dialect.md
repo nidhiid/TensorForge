@@ -1,8 +1,9 @@
 # TensorForge Dialect
 
 The `tf` dialect is TensorForge's high-level MLIR vocabulary. Its operations
-describe computation but do not execute it or lower it to loops, LLVM IR, or
-CUDA yet.
+describe computation without committing to a specific machine.
+The Phase 6 CPU path lowers these operations through standard MLIR dialects to LLVM IR;
+CUDA lowering remains a later milestone.
 
 ## `tf.matmul`
 

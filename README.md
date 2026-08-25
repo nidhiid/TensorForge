@@ -35,6 +35,12 @@ and double-transpose canonicalization, constant-reshape folding, and a safe
 pass that rewrites a single-use `tf.linear -> tf.gelu` pair to
 `tf.fused_linear_gelu`.
 
+Phase 6 adds [CPU lowering and execution](docs/cpu-lowering.md). Every `tf`
+operation lowers to standard MLIR `linalg`, `tensor`, `arith`, and `math`
+operations. MLIR's existing passes then lower those operations to LLVM IR, and
+an end-to-end test JIT-executes fused Linear+GELU and checks its numerical
+result.
+
 See [Building TensorForge](docs/building.md) for dependency, build, test, and
-execution instructions. The next milestone is lowering TensorForge operations
-to executable CPU code.
+execution instructions. The next milestone is a small Python/PyTorch frontend
+and CPU correctness comparison.

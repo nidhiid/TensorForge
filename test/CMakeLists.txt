@@ -57,3 +57,28 @@ add_test(
           -DCANONICALIZE_INPUT=${CMAKE_CURRENT_SOURCE_DIR}/Transforms/canonicalize.mlir
           -P ${CMAKE_CURRENT_SOURCE_DIR}/Transforms/check-optimizations.cmake
 )
+
+add_test(
+  NAME tensorforge-lowers-all-operations-to-cpu-dialects
+  COMMAND ${CMAKE_COMMAND}
+          -DTENSORFORGE_OPT=$<TARGET_FILE:tensorforge-opt>
+          -DLOWERING_INPUT=${CMAKE_CURRENT_SOURCE_DIR}/Lowering/to-linalg.mlir
+          -P ${CMAKE_CURRENT_SOURCE_DIR}/Lowering/check-cpu-lowering.cmake
+)
+
+find_program(
+  TENSORFORGE_MLIR_RUNNER
+  NAMES mlir-runner
+  HINTS "${LLVM_TOOLS_BINARY_DIR}" "${MLIR_TOOLS_DIR}"
+  REQUIRED
+)
+
+add_test(
+  NAME tensorforge-executes-all-operations-on-cpu
+  COMMAND ${CMAKE_COMMAND}
+          -DTENSORFORGE_OPT=$<TARGET_FILE:tensorforge-opt>
+          -DMLIR_RUNNER=${TENSORFORGE_MLIR_RUNNER}
+          -DEXECUTION_INPUT=${CMAKE_CURRENT_SOURCE_DIR}/Execution/cpu.mlir
+          -DLOWERED_FILE=${CMAKE_CURRENT_BINARY_DIR}/tensorforge-cpu-llvm.mlir
+          -P ${CMAKE_CURRENT_SOURCE_DIR}/Execution/check-cpu-execution.cmake
+)

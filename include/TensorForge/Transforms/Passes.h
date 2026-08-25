@@ -10,6 +10,7 @@ class Pass;
 namespace tensorforge {
 
 std::unique_ptr<mlir::Pass> createFuseLinearGeluPass();
+std::unique_ptr<mlir::Pass> createLowerToLinalgPass();
 void registerTensorForgePasses();
 
 } // namespace tensorforge

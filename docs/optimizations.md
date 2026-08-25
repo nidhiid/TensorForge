@@ -1,8 +1,7 @@
 # Phase 5 Optimizations
 
 Phase 5 transforms valid TensorForge IR into simpler or more hardware-friendly
-IR. These transformations do not execute tensors yet; CPU lowering and CUDA
-kernels are later phases.
+IR. Phase 6 can execute the result on a CPU; CUDA kernels remain a later phase.
 
 ## Linear-GELU fusion
 
